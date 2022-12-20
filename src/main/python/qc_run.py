@@ -30,6 +30,7 @@ import os.path
 import stat
 import time
 from pipes import quote
+import xml.etree.ElementTree as ET
 
 import common
 import demux_run
@@ -46,6 +47,7 @@ from fr.ens.biologie.genomique.aozan.Settings import QC_REPORT_SAVE_RAW_DATA_KEY
 from fr.ens.biologie.genomique.aozan.Settings import REPORTS_DATA_PATH_KEY
 from fr.ens.biologie.genomique.aozan.Settings import QC_REPORT_STYLESHEET_KEY
 from fr.ens.biologie.genomique.aozan.Settings import QC_REPORT_SAVE_REPORT_DATA_KEY
+from fr.ens.biologie.genomique.aozan.Settings import QC_REPORT_SAVE_SHORT_REPORT_DATA_KEY
 from fr.ens.biologie.genomique.aozan.Settings import TMP_PATH_KEY
 
 
@@ -186,6 +188,35 @@ def qc(run_id, conf):
     if common.is_conf_value_equals_true(QC_REPORT_SAVE_REPORT_DATA_KEY, conf):
         try:
             qc.writeXMLReport(report, qc_output_dir + '/' + run_id + '.xml')
+            # Write the short XML report
+            if common.is_conf_key_exists(QC_REPORT_SAVE_SHORT_REPORT_DATA_KEY, conf):
+                tree = ET.parse(qc_output_dir + '/' + run_id + '.xml')
+                root = tree.getroot()
+                for columns_node in root.iter('Columns'):
+                    for column in columns_node.findall('Column'):
+                        if column.get('testname') not in conf[QC_REPORT_SAVE_SHORT_REPORT_DATA_KEY]:
+                            columns_node.remove(column)
+                for run_node in root.iter('Run'):
+                    for test in run_node.findall('Test'):
+                        if test.get('name') not in conf[QC_REPORT_SAVE_SHORT_REPORT_DATA_KEY]:
+                            run_node.remove(test)
+                for lane_node in root.iter('Lane'):
+                    for test in lane_node.findall('Test'):
+                        if test.get('name') not in conf[QC_REPORT_SAVE_SHORT_REPORT_DATA_KEY]:
+                            lane_node.remove(test)
+                for project_node in root.iter('Project'):
+                    for test in project_node.findall('Test'):
+                        if test.get('name') not in conf[QC_REPORT_SAVE_SHORT_REPORT_DATA_KEY]:
+                            project_node.remove(test)
+                for samplestats_node in root.iter('SampleStats'):
+                    for test in samplestats_node.findall('Test'):
+                        if test.get('name') not in conf[QC_REPORT_SAVE_SHORT_REPORT_DATA_KEY]:
+                            samplestats_node.remove(test)
+                for sample_node in root.iter('Sample'):
+                    for test in sample_node.findall('Test'):
+                        if test.get('name') not in conf[QC_REPORT_SAVE_SHORT_REPORT_DATA_KEY]:
+                            sample_node.remove(test)
+                tree.write(qc_output_dir + '/' + run_id + 'short.xml')
         except AozanException, exp:
             error("Error while computing QC XML report for run " + run_id + ".", common.exception_msg(exp, conf), conf)
             return False

@@ -161,6 +161,9 @@ public final class Settings {
   /** QC report save report data. */
   public static final String QC_REPORT_SAVE_REPORT_DATA_KEY =
       "qc.report.save.report.data";
+  /** QC report save short report data. */
+  public static final String QC_REPORT_SAVE_SHORT_REPORT_DATA_KEY =
+      "qc.report.save.short.report.data";
   /** QC report stylesheet path. */
   public static final String QC_REPORT_STYLESHEET_KEY = "qc.report.stylesheet";
   /** QC step. */
